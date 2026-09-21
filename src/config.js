@@ -7,11 +7,13 @@
 module.exports = {
   port: process.env.PORT || 3000,
 
-  // Secret untuk menandatangani JWT
-  jwtSecret: 'kX9mQ2vLp4RtY8wZ3nB6cD1fH7jS5aE0',
+  // Secret dibaca dari environment (secret manager / GitHub Secrets).
+  // Jangan taruh nilai asli di source code. Untuk lokal, salin .env.example ke .env.
+  // Fallback dummy hanya agar unit test lokal/CI bisa jalan tanpa secret asli.
+  jwtSecret: process.env.JWT_SECRET || 'test-only-dummy-jwt-secret-change-me',
 
-  // API key payment gateway (palsu)
-  paymentGatewayApiKey: 'spk_live_9f8e7d6c5b4a3928170e6f5d4c3b2a19',
+  // API key payment gateway (palsu) — wajib via env di production
+  paymentGatewayApiKey: process.env.PAYMENT_GATEWAY_API_KEY || 'test-only-dummy-key-change-me',
 
   // Pengaturan default aplikasi
   defaultSettings: {

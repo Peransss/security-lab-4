@@ -1,9 +1,23 @@
 const crypto = require('crypto');
 const initSqlJs = require('sql.js');
 
-// Hash password (lihat apakah ini aman?)
+// Password hashing khusus password: scrypt + salt acak per user.
+// Format simpan: "salt:hash" (hex). Verifikasi pakai timingSafeEqual.
 function hashPassword(password) {
-  return crypto.createHash('md5').update(password).digest('hex');
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto.scryptSync(String(password), salt, 64).toString('hex');
+  return `${salt}:${hash}`;
+}
+
+function verifyPassword(password, stored) {
+  const parts = String(stored || '').split(':');
+  if (parts.length !== 2) return false;
+  const [salt, hashHex] = parts;
+  if (!salt || !hashHex) return false;
+  const expected = Buffer.from(hashHex, 'hex');
+  const derived = crypto.scryptSync(String(password), salt, 64);
+  if (derived.length !== expected.length) return false;
+  return crypto.timingSafeEqual(derived, expected);
 }
 
 // Membuat database SQLite in-memory berisi data contoh
@@ -55,4 +69,4 @@ function allBound(db, sql, params) {
   return rows;
 }
 
-module.exports = { createDb, hashPassword, all, allBound };
+module.exports = { createDb, hashPassword, verifyPassword, all, allBound };

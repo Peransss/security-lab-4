@@ -1,5 +1,12 @@
 const { test, before, after } = require('node:test');
 const assert = require('node:assert');
+const crypto = require('node:crypto');
+
+// Tahap A: sediakan secret dummy secara runtime agar test tidak butuh secret asli.
+// Nilai acak → tidak ada secret hardcoded yang bisa ke-detect Gitleaks.
+if (!process.env.JWT_SECRET) process.env.JWT_SECRET = crypto.randomBytes(32).toString('hex');
+if (!process.env.PAYMENT_GATEWAY_API_KEY) process.env.PAYMENT_GATEWAY_API_KEY = crypto.randomBytes(16).toString('hex');
+
 const { createApp } = require('../src/app');
 
 let server;
