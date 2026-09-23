@@ -10,15 +10,18 @@ module.exports = {
   // Secret dibaca dari environment (secret manager / GitHub Secrets).
   // Jangan taruh nilai asli di source code. Untuk lokal, salin .env.example ke .env.
   // Fallback dummy hanya agar unit test lokal/CI bisa jalan tanpa secret asli.
-  jwtSecret: process.env.JWT_SECRET || 'test-only-dummy-jwt-secret-change-me',
+  jwtSecret: process.env.JWT_SECRET,
 
   // API key payment gateway (palsu) — wajib via env di production
-  paymentGatewayApiKey: process.env.PAYMENT_GATEWAY_API_KEY || 'test-only-dummy-key-change-me',
+  paymentGatewayApiKey: process.env.PAYMENT_GATEWAY_API_KEY,
 
   // Pengaturan default aplikasi
   defaultSettings: {
-    currency: 'IDR',
+    currency: "IDR",
     dailyTransferLimit: 10000000,
-    notifications: { email: true, sms: false },
+    notifications: {
+      email: true,
+      sms: false,
+    },
   },
 };

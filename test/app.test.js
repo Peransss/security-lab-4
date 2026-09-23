@@ -1,13 +1,15 @@
-const { test, before, after } = require('node:test');
-const assert = require('node:assert');
-const crypto = require('node:crypto');
+const { test, before, after } = require("node:test");
+const assert = require("node:assert");
+const crypto = require("node:crypto");
 
 // Tahap A: sediakan secret dummy secara runtime agar test tidak butuh secret asli.
 // Nilai acak → tidak ada secret hardcoded yang bisa ke-detect Gitleaks.
-if (!process.env.JWT_SECRET) process.env.JWT_SECRET = crypto.randomBytes(32).toString('hex');
-if (!process.env.PAYMENT_GATEWAY_API_KEY) process.env.PAYMENT_GATEWAY_API_KEY = crypto.randomBytes(16).toString('hex');
+if (!process.env.JWT_SECRET)
+  process.env.JWT_SECRET = crypto.randomBytes(32).toString("hex");
+if (!process.env.PAYMENT_GATEWAY_API_KEY)
+  process.env.PAYMENT_GATEWAY_API_KEY = crypto.randomBytes(16).toString("hex");
 
-const { createApp } = require('../src/app');
+const { createApp } = require("../src/app");
 
 let server;
 let base;
@@ -24,56 +26,59 @@ after(() => server.close());
 
 async function login(username, password) {
   return fetch(`${base}/api/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, password }),
   });
 }
 
-test('GET /health mengembalikan status ok', async () => {
+test("GET /health mengembalikan status ok", async () => {
   const res = await fetch(`${base}/health`);
   assert.strictEqual(res.status, 200);
-  assert.deepStrictEqual(await res.json(), { status: 'ok' });
+  assert.deepStrictEqual(await res.json(), { status: "ok" });
 });
 
-test('GET /welcome menyapa pengguna', async () => {
+test("GET /welcome menyapa pengguna", async () => {
   const res = await fetch(`${base}/welcome?name=Budi`);
   assert.match(await res.text(), /Budi/);
 });
 
-test('pencarian pengguna berdasarkan nama', async () => {
+test("pencarian pengguna berdasarkan nama", async () => {
   const res = await fetch(`${base}/api/users/search?q=Budi`);
   const data = await res.json();
   assert.strictEqual(data.length, 1);
-  assert.strictEqual(data[0].username, 'budi');
+  assert.strictEqual(data[0].username, "budi");
 });
 
-test('login berhasil mengembalikan token', async () => {
-  const res = await login('budi', 'budi123');
+test("login berhasil mengembalikan token", async () => {
+  const res = await login("budi", "budi123");
   assert.strictEqual(res.status, 200);
   assert.ok((await res.json()).token);
 });
 
-test('login dengan password salah ditolak', async () => {
-  const res = await login('budi', 'salah');
+test("login dengan password salah ditolak", async () => {
+  const res = await login("budi", "salah");
   assert.strictEqual(res.status, 401);
 });
 
-test('transfer dari budi ke sari berhasil', async () => {
-  const { token } = await (await login('budi', 'budi123')).json();
+test("transfer dari budi ke sari berhasil", async () => {
+  const { token } = await (await login("budi", "budi123")).json();
   const res = await fetch(`${base}/api/transfer`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ from: 'budi', to: 'sari', amount: 100000 }),
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ from: "budi", to: "sari", amount: 100000 }),
   });
   assert.strictEqual(res.status, 200);
 });
 
-test('transfer tanpa token ditolak', async () => {
+test("transfer tanpa token ditolak", async () => {
   const res = await fetch(`${base}/api/transfer`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ from: 'budi', to: 'sari', amount: 1000 }),
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ from: "budi", to: "sari", amount: 1000 }),
   });
   assert.strictEqual(res.status, 401);
 });
